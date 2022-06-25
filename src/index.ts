@@ -5,11 +5,11 @@ declare global {
         ethereum?: any;
     }
 }
-4;
 export class MetamaskLogin {
-    private static _connected: boolean = false;
     private static _provider: ethers.providers.Web3Provider;
     private static _wallet: string;
+
+    public static on = window.ethereum.on.bind(window.ethereum);
 
     public static async connectWallet() {
         if (!window.ethereum?.isMetaMask) {
@@ -21,14 +21,14 @@ export class MetamaskLogin {
         });
 
         this._provider = new ethers.providers.Web3Provider(window.ethereum);
+
         const accounts = await this._provider.send("eth_requestAccounts", []);
 
         this._wallet = accounts[0];
-        this._connected = true;
     }
 
     public static async signMessage(message: string) {
-        if (!this._connected) {
+        if (!this.isWalletConnected) {
             throw new Error("Wallet not connected");
         }
         const signature: string = await this._provider.send("personal_sign", [this._wallet, message]);
@@ -49,6 +49,6 @@ export class MetamaskLogin {
     }
 
     public static get isWalletConnected() {
-        return this._connected;
+        return window.ethereum.isConnected();
     }
 }
